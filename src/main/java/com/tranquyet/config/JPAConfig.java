@@ -17,25 +17,29 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "com.tranquyet.repository")
+@EnableJpaRepositories(basePackages = { "com.tranquyet.repository" })
 @EnableTransactionManagement
 public class JPAConfig {
-	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-		em.setDataSource(dataSource());
-		em.setPersistenceUnitName("persistence-data");
-		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-		em.setJpaVendorAdapter(vendorAdapter);
-		em.setJpaProperties(additionalProperties());
-		return em;
+
+	public Properties additionalProperties() {
+		Properties properties = new Properties();
+
+		properties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+		//properties.setProperty("hibernate.hbm2ddl.auto", "none");
+		properties.setProperty("hibernate.enable_lazy_load_no_trans", "true");
+
+		return properties;
+
 	}
 
 	@Bean
-	JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
-		JpaTransactionManager transactionManager = new JpaTransactionManager();
-		transactionManager.setEntityManagerFactory(entityManagerFactory);
-		return transactionManager;
+	public DataSource dataSource() {
+		DriverManagerDataSource data = new DriverManagerDataSource();
+		data.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		data.setUrl("jdbc:mysql://localhost:3306/test_jpa");
+		data.setUsername("root");
+		data.setPassword("54935620tQ.");
+		return data;
 	}
 
 	@Bean
@@ -44,21 +48,20 @@ public class JPAConfig {
 	}
 
 	@Bean
-	public DataSource dataSource() {
-		DriverManagerDataSource dataSource = new DriverManagerDataSource();
-		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-		dataSource.setUrl("jdbc:mysql://localhost:3306/shop");
-		dataSource.setUsername("root");
-		dataSource.setPassword("54935620tQ.");
-		return dataSource;
+	public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+		JpaTransactionManager transactionManager = new JpaTransactionManager();
+		transactionManager.setEntityManagerFactory(entityManagerFactory);
+		return transactionManager;
+	}
+	@Bean
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+		em.setDataSource(dataSource());
+		em.setPersistenceUnitName("persistence-data");
+		JpaVendorAdapter vendor = new HibernateJpaVendorAdapter();
+		em.setJpaVendorAdapter(vendor);
+		em.setJpaProperties(additionalProperties());
+		return em;
 	}
 
-	Properties additionalProperties() {
-		Properties properties = new Properties();
-		// properties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
-		// properties.setProperty("hibernate.hbm2ddl.auto", "create");
-//		properties.setProperty("hibernate.hbm2ddl.auto", "none");
-		properties.setProperty("hibernate.enable_lazy_load_no_trans", "true");
-		return properties;
-	}
 }
